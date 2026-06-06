@@ -370,6 +370,29 @@ body {
     50% { transform: rotate(10deg) translateY(-4px); }
 }
 
+.lightning-animate {
+    color: var(--color-storm);
+    animation: lightning-flash 1.5s infinite ease-in-out;
+    filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.6));
+}
+
+@keyframes lightning-flash {
+    0%, 100% { transform: translateY(0); opacity: 1; filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.6)); }
+    45%, 55% { opacity: 0.35; }
+    50% { opacity: 1; filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.95)); }
+}
+
+.mist-animate {
+    color: var(--text-secondary);
+    animation: mist-drift 4s infinite ease-in-out;
+    filter: drop-shadow(0 4px 8px rgba(148, 163, 184, 0.3));
+}
+
+@keyframes mist-drift {
+    0%, 100% { transform: translateX(0) scaleY(1); }
+    50% { transform: translateX(4px) scaleY(1.05); opacity: 0.8; }
+}
+
 .feels-like-text {
     font-size: 0.78rem;
     color: var(--text-secondary);
@@ -650,8 +673,9 @@ body {
     font-weight: bold;
     text-shadow: 0 0 6px var(--color-success);
 }
-
-/* Responsive */
+/* ==========================================================================
+   RESPONSIVE DESIGN SYSTEM (MOBILE COMPACT & TIDY)
+   ========================================================================== */
 @media (max-width: 800px) {
     .dashboard-main {
         grid-template-columns: 1fr;
@@ -659,10 +683,144 @@ body {
     .metrics-grid-section {
         grid-template-columns: 1fr 1fr;
     }
-    .custom-chart-container {
-        grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 0.75rem 0.5rem;
     }
-    .chart-bar-col:nth-child(n+5) {
-        display: none; /* Hide last 4 forecast bars on small screens */
+    
+    .dashboard-container {
+        padding: 1.25rem 1rem;
+        border-radius: 20px;
+        gap: 1rem;
+    }
+    
+    /* Header layout stack */
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.85rem;
+        padding-bottom: 0.85rem;
+    }
+    
+    .header-controls {
+        width: 100%;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+    
+    .city-selector-wrapper {
+        flex: 1;
+    }
+    
+    .city-select {
+        width: 100%;
+    }
+    
+    /* Main weather card compact adjustments */
+    .main-weather-card {
+        padding: 1.25rem;
+        min-height: 190px;
+    }
+    
+    .city-title {
+        font-size: 1.75rem;
+    }
+    
+    .temp-val {
+        font-size: 3.5rem;
+    }
+    
+    .weather-visual-box {
+        width: 110px;
+        gap: 0.75rem;
+    }
+    
+    .weather-icon-wrapper {
+        font-size: 3.25rem;
+    }
+    
+    /* Metrics grid cards compact */
+    .metrics-grid-section {
+        gap: 0.75rem;
+    }
+    
+    .metric-card {
+        padding: 1rem;
+        min-height: 105px;
+    }
+    
+    .metric-big-num {
+        font-size: 1.5rem;
+    }
+    
+    .status-badge {
+        margin-left: 0.25rem;
+        font-size: 0.58rem;
+        padding: 0.1rem 0.35rem;
+    }
+    
+    /* Turbine animation scale */
+    .turbine-container {
+        right: 8px;
+        bottom: -10px;
+        transform: scale(0.75);
+    }
+    
+    /* Show all 8 forecast bars horizontally but make them narrower */
+    .custom-chart-container {
+        grid-template-columns: repeat(8, 1fr) !important;
+        gap: 0.35rem;
+        height: 90px;
+        padding-top: 0.75rem;
+    }
+    
+    .chart-bar-col {
+        display: flex !important;
+    }
+    
+    .bar-temp {
+        font-size: 0.65rem;
+    }
+    
+    .bar-label {
+        font-size: 0.55rem;
+    }
+    
+    .bar-body {
+        max-width: 12px;
+    }
+    
+    /* Footer layout stack */
+    .dashboard-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+        text-align: center;
+        font-size: 0.7rem;
+    }
+    
+    .footer-left {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+    
+    .cloud-badge {
+        justify-content: center;
+        width: 100%;
+        padding: 0.3rem 0.6rem;
+    }
+}
+
+@media (max-width: 420px) {
+    /* Stack metrics grid to single column on very narrow screens */
+    .metrics-grid-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .metric-card {
+        min-height: 95px;
     }
 }

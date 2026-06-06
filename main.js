@@ -8,7 +8,12 @@ const citiesConfig = {
     HoChiMinh: { name: "TP. Hồ Chí Minh", lat: 10.7758, lon: 106.7018 },
     DaNang: { name: "Đà Nẵng", lat: 16.0678, lon: 108.2208 },
     HaiPhong: { name: "Hải Phòng", lat: 20.8449, lon: 106.6881 },
-    CanTho: { name: "Cần Thơ", lat: 10.0375, lon: 105.7882 }
+    CanTho: { name: "Cần Thơ", lat: 10.0375, lon: 105.7882 },
+    NhaTrang: { name: "Nha Trang", lat: 12.2451, lon: 109.1948 },
+    DaLat: { name: "Đà Lạt", lat: 11.9404, lon: 108.4583 },
+    Hue: { name: "Huế", lat: 16.4637, lon: 107.5909 },
+    VungTau: { name: "Vũng Tàu", lat: 10.3460, lon: 107.0843 },
+    QuangNinh: { name: "Quảng Ninh", lat: 20.9599, lon: 107.0454 }
 };
 
 // Fallback simulated database (used if internet is offline or API fails)
@@ -37,6 +42,31 @@ const simulatedData = {
         temp: 28, feels: 31, humidity: 90, wind: 22.0, uv: 2.2, aqi: 35, pm25: 8,
         code: 80, desc: "Có mưa rào nặng hạt (Offline Mode)",
         hourly: [25, 26, 28, 27, 26, 25, 25, 24]
+    },
+    NhaTrang: {
+        temp: 31, feels: 34, humidity: 75, wind: 10.0, uv: 8.0, aqi: 42, pm25: 10,
+        code: 0, desc: "Trời quang đãng, nắng đẹp (Offline Mode)",
+        hourly: [27, 29, 31, 32, 31, 29, 28, 27]
+    },
+    DaLat: {
+        temp: 22, feels: 22, humidity: 80, wind: 8.0, uv: 6.0, aqi: 25, pm25: 5,
+        code: 2, desc: "Trời mát mẻ, nhiều mây (Offline Mode)",
+        hourly: [16, 18, 22, 23, 21, 19, 17, 16]
+    },
+    Hue: {
+        temp: 32, feels: 36, humidity: 70, wind: 12.0, uv: 7.0, aqi: 55, pm25: 15,
+        code: 1, desc: "Trời ít mây, nắng ấm (Offline Mode)",
+        hourly: [26, 28, 32, 33, 31, 29, 28, 26]
+    },
+    VungTau: {
+        temp: 30, feels: 34, humidity: 78, wind: 15.0, uv: 7.5, aqi: 50, pm25: 12,
+        code: 2, desc: "Trời nhiều mây, hửng nắng (Offline Mode)",
+        hourly: [27, 28, 30, 31, 30, 29, 28, 27]
+    },
+    QuangNinh: {
+        temp: 29, feels: 32, humidity: 82, wind: 14.0, uv: 6.5, aqi: 60, pm25: 17,
+        code: 3, desc: "Trời nhiều mây, ẩm ướt (Offline Mode)",
+        hourly: [25, 27, 29, 30, 29, 27, 26, 25]
     }
 };
 
@@ -118,15 +148,33 @@ function updateLocalTime() {
 }
 
 // Map WMO codes to human readable Vietnamese weather descriptions
-function mapWmoCodeToDesc(code) {
-    if (code === 0) return "Trời trong xanh, nắng rực rỡ";
-    if (code >= 1 && code <= 3) return "Trời nhiều mây, có lúc hửng nắng";
-    if (code === 45 || code === 48) return "Có sương mù nhẹ";
-    if (code >= 51 && code <= 55) return "Mưa phùn rải rác";
-    if (code >= 61 && code <= 65) return "Có mưa rào và giông";
-    if (code >= 71 && code <= 77) return "Có mưa tuyết rải rác";
-    if (code >= 80 && code <= 82) return "Có mưa rào nặng hạt";
-    if (code >= 95 && code <= 99) return "Giông bão nghiêm trọng";
+function mapWmoCodeToDesc(code, precipitation = 0) {
+    // Check if rain/storm code is returned but there is no actual rain falling
+    if (code >= 95 && code <= 99) {
+        if (precipitation === 0) {
+            return "Trời nắng có mây giông rải rác";
+        }
+        return "Có mưa giông lớn và sấm sét";
+    }
+    if ((code >= 51 && code <= 65) || (code >= 80 && code <= 82)) {
+        if (precipitation === 0) {
+            return "Trời nhiều mây, hửng nắng nhẹ";
+        }
+    }
+
+    if (code === 0) return "Trời quang đãng, nắng đẹp";
+    if (code === 1) return "Trời quang, nắng nhẹ";
+    if (code === 2) return "Ít mây, hửng nắng";
+    if (code === 3) return "Nhiều mây, âm u";
+    if (code === 45 || code === 48) return "Có sương mù";
+    if (code >= 51 && code <= 55) return "Mưa phùn nhẹ";
+    if (code >= 56 && code <= 57) return "Mưa phùn lạnh";
+    if (code >= 61 && code <= 65) return "Có mưa rào rải rác";
+    if (code >= 66 && code <= 67) return "Mưa buốt";
+    if (code >= 71 && code <= 75) return "Có mưa tuyết rải rác";
+    if (code === 77) return "Tuyết hạt";
+    if (code >= 80 && code <= 82) return "Mưa rào lớn";
+    if (code >= 85 && code <= 86) return "Mưa tuyết nặng";
     return "Thời tiết ổn định";
 }
 
@@ -141,6 +189,7 @@ function updateDashboard(cityKey, rawData, isSimulated) {
     cityName.textContent = config.name;
 
     let temp, feels, humidity, wind, uv, aqi, pm25, wCode, desc, hourlyTemps;
+    let precip = 0;
 
     if (isSimulated) {
         // Parse simulated offline object structure
@@ -154,6 +203,7 @@ function updateDashboard(cityKey, rawData, isSimulated) {
         wCode = rawData.code;
         desc = rawData.desc;
         hourlyTemps = rawData.hourly;
+        precip = (wCode >= 51 && wCode <= 65) || (wCode >= 80 && wCode <= 82) || (wCode >= 95 && wCode <= 99) ? 2.5 : 0;
 
         apiStatusLabel.textContent = "Offline Mode (Simulated)";
         apiStatusLabel.className = "status-online";
@@ -167,7 +217,8 @@ function updateDashboard(cityKey, rawData, isSimulated) {
         humidity = current.relative_humidity_2m;
         wind = current.wind_speed_10m;
         wCode = current.weather_code;
-        desc = mapWmoCodeToDesc(wCode);
+        precip = current.precipitation || 0;
+        desc = mapWmoCodeToDesc(wCode, precip);
 
         // Derive mock environmental attributes based on temperature and humidity to look real
         uv = wCode === 0 ? 8.2 : wCode <= 3 ? 4.5 : 1.2;
@@ -193,7 +244,7 @@ function updateDashboard(cityKey, rawData, isSimulated) {
     weatherDescription.textContent = desc;
 
     // 2. Update Weather Icon and Visual Effects (Rain/Snow/Sun)
-    updateWeatherVisuals(wCode);
+    updateWeatherVisuals(wCode, precip);
 
     // 3. Update AQI Card
     aqiValue.textContent = aqi;
@@ -227,7 +278,7 @@ function updateDashboard(cityKey, rawData, isSimulated) {
 }
 
 // Adjust animated icons, screen precipitation particles, and background glows based on weather code
-function updateWeatherVisuals(code) {
+function updateWeatherVisuals(code, precipitation = 0) {
     // Clear previous drops
     weatherEffects.innerHTML = "";
 
@@ -237,22 +288,56 @@ function updateWeatherVisuals(code) {
     let glow2Color = "rgba(16, 185, 129, 0.2)";  // Emerald
 
     if (code === 0) { // Clear sky
-        iconClass = "fa-solid fa-sun-bright spin-animate";
+        iconClass = "fa-solid fa-sun spin-animate";
         glow1Color = "rgba(245, 158, 11, 0.35)"; // Amber sun glow
         glow2Color = "rgba(239, 68, 68, 0.15)";  // Red warm
     } 
-    else if (code >= 51 && code <= 65 || code >= 80 && code <= 82) { // Rain / Showers
-        iconClass = "fa-solid fa-cloud-showers-heavy rain-animate";
-        glow1Color = "rgba(30, 41, 59, 0.5)";    // Dark slate
-        glow2Color = "rgba(59, 130, 246, 0.25)";  // Rain blue
-        
-        // Spawn falling rain drops dynamically on the screen!
-        createPrecipitationEffect("rain-drop");
+    else if (code >= 1 && code <= 3) { // Cloudy levels
+        if (code === 1) {
+            iconClass = "fa-solid fa-cloud-sun cloud-float";
+            glow1Color = "rgba(245, 158, 11, 0.25)";
+            glow2Color = "rgba(59, 130, 246, 0.15)";
+        } else {
+            iconClass = "fa-solid fa-cloud cloud-float";
+            glow1Color = "rgba(148, 163, 184, 0.3)";
+            glow2Color = "rgba(59, 130, 246, 0.15)";
+        }
+    }
+    else if (code === 45 || code === 48) { // Fog
+        iconClass = "fa-solid fa-smog mist-animate";
+        glow1Color = "rgba(148, 163, 184, 0.4)";
+        glow2Color = "rgba(203, 213, 225, 0.2)";
+    }
+    else if ((code >= 51 && code <= 65) || (code >= 80 && code <= 82)) { // Rain / Showers
+        if (precipitation > 0) {
+            iconClass = "fa-solid fa-cloud-showers-heavy rain-animate";
+            glow1Color = "rgba(30, 41, 59, 0.5)";    // Dark slate
+            glow2Color = "rgba(59, 130, 246, 0.25)";  // Rain blue
+            createPrecipitationEffect("rain-drop");
+        } else {
+            // Cloudy but dry rain codes
+            iconClass = "fa-solid fa-cloud-sun-rain cloud-float";
+            glow1Color = "rgba(245, 158, 11, 0.25)";
+            glow2Color = "rgba(59, 130, 246, 0.2)";
+        }
     } 
     else if (code >= 71 && code <= 77) { // Snow
         iconClass = "fa-solid fa-snowflake snow-fall-animate";
         glow1Color = "rgba(56, 189, 248, 0.3)";  // Ice sky blue
         glow2Color = "rgba(255, 255, 255, 0.1)"; // Cold white
+    }
+    else if (code >= 95 && code <= 99) { // Thunderstorm
+        if (precipitation > 0) {
+            iconClass = "fa-solid fa-cloud-bolt lightning-animate";
+            glow1Color = "rgba(124, 58, 237, 0.45)"; // Intense Purple
+            glow2Color = "rgba(30, 41, 59, 0.6)";    // Dark slate
+            createPrecipitationEffect("rain-drop");
+        } else {
+            // Hot/sunny with storm nearby (like HCMC today)
+            iconClass = "fa-solid fa-cloud-sun-rain cloud-float";
+            glow1Color = "rgba(245, 158, 11, 0.25)";
+            glow2Color = "rgba(124, 58, 237, 0.25)";
+        }
     }
     
     // Inject icon
